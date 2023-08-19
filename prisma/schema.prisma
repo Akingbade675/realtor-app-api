@@ -9,3 +9,66 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+enum UserType {
+  REALTOR
+  BUYER
+  ADMIN
+}
+
+enum PropertyType {
+  RESIDENTIAL
+  CONDO
+}
+
+model User {
+  id                    Int       @id @default(autoincrement())
+  name                  String
+  phone                 String
+  email                 String    @unique
+  password              String
+  created_at            DateTime  @default(now())
+  updated_at            DateTime  @updatedAt
+  user_type             UserType
+  homes                 Home[]
+  realtor_messages      Message[] @relation("realtor_messages")
+  buyer_messages        Message[] @relation("buyer_messages")
+}
+
+model Home {
+  id                    Int       @id @default(autoincrement())
+  address               String
+  number_of_bathrooms   Int
+  number_of_bedrooms    Float
+  city                  String
+  listed_date           DateTime  @default(now())
+  price                 Float
+  land_size             Float
+  property_type         PropertyType
+  created_at            DateTime  @default(now())
+  updated_at            DateTime  @updatedAt
+  realtor_id            Int
+  realtor               User      @relation(fields: [realtor_id], references: [id]) 
+  images                Image[]
+  messages              Message[]
+}
+
+model Image {
+  id                    Int       @id @default(autoincrement())
+  url                   String
+  created_at            DateTime  @default(now())
+  updated_at            DateTime  @updatedAt
+  home_id               Int
+  home                  Home      @relation(fields: [home_id], references: [id])
+}
+
+model Message {
+  id                    Int       @id @default(autoincrement())
+  message               String
+  home_id               Int
+  home                  Home      @relation(fields: [home_id], references: [id])
+  realtor_id            Int
+  realtor               User      @relation("realtor_messages", fields: [realtor_id], references: [id])
+  buyer_id              Int
+  buyer                 User      @relation("buyer_messages", fields: [buyer_id], references: [id])
+}
